@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Copy, Check } from "lucide-react";
 import { useState } from "react";
+import { DynamicWidget } from "@dynamic-labs/sdk-react-core";
 
 export function WalletSidebar() {
   const { address, isConnected, chain } = useAccount();
@@ -32,7 +33,7 @@ export function WalletSidebar() {
             Connect your wallet to get started
           </p>
           <div className="w-full">
-            <appkit-button />
+            <DynamicWidget />
           </div>
         </div>
       ) : (
@@ -138,7 +139,7 @@ export function WalletSidebar() {
           {/* Actions */}
           <div className="pt-4 border-t">
             <div className="w-full">
-              <appkit-button />
+              <DynamicWidget />
             </div>
           </div>
         </div>

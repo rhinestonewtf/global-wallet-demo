@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Send, Loader2 } from "lucide-react";
-import { arbitrum, base } from "@reown/appkit/networks";
+import { arbitrum, base } from "wagmi/chains";
 import { encodeFunctionData, erc20Abi, parseUnits } from "viem";
 
 const USDC_ADDRESSES: { [chainId: number]: string } = {
