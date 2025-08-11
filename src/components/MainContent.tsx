@@ -26,6 +26,7 @@ export function MainContent() {
   } = useGlobalWallet();
   const [isTransacting, setIsTransacting] = useState(false);
   const [result, setResult] = useState<string | null>(null);
+  const [transactionHash, setTransactionHash] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const [amount, setAmount] = useState("0.1");
@@ -36,6 +37,11 @@ export function MainContent() {
     (chain) => chain.chainId === 42161
   );
 
+  // Check if user has available (unlocked) USDC on Arbitrum
+  const hasAvailableUSDC =
+    arbitrumBalance && parseFloat(arbitrumBalance.formattedUnlockedBalance) > 0;
+  console.log(arbitrumBalance);
+
   const handleTransfer = async () => {
     if (!accountAddress || !recipient || !amount) {
       setError("Please fill in all fields");
@@ -45,6 +51,7 @@ export function MainContent() {
     setIsTransacting(true);
     setError(null);
     setResult(null);
+    setTransactionHash(null);
 
     try {
       const amountWei = parseUnits(amount, 6);
@@ -74,9 +81,15 @@ export function MainContent() {
         tokenRequests
       );
 
-      setResult(
-        `Transfer successful! Transaction ID: ${transaction.transaction.id}`
-      );
+      // Set transaction hash if available
+      if (transaction.fillTransactionHash) {
+        setTransactionHash(transaction.fillTransactionHash);
+        setResult(`Transfer successful! View transaction on BaseScan`);
+      } else {
+        setResult(
+          `Transfer successful! Transaction ID: ${transaction.transaction.id}`
+        );
+      }
       setAmount("");
       setRecipient("");
 
@@ -143,8 +156,26 @@ export function MainContent() {
               <Alert>
                 <AlertDescription>
                   <div className="space-y-3">
-                    <div className="max-h-24 overflow-y-auto break-all text-sm">
-                      {result}
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium text-green-700">
+                        {result}
+                      </p>
+                      {transactionHash && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-slate-600">
+                            Transaction Hash:
+                          </span>
+                          <a
+                            href={`https://basescan.org/tx/${transactionHash}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs font-mono bg-slate-100 px-2 py-1 rounded border hover:bg-slate-200 transition-colors text-blue-600 hover:text-blue-800"
+                          >
+                            {transactionHash.slice(0, 10)}...
+                            {transactionHash.slice(-8)}
+                          </a>
+                        </div>
+                      )}
                     </div>
                     {recipient && (
                       <div className="pt-2 border-t space-y-2">
@@ -152,6 +183,16 @@ export function MainContent() {
                           🎉 Transaction completed! Check the results:
                         </p>
                         <div className="flex flex-wrap gap-2">
+                          {transactionHash && (
+                            <a
+                              href={`https://basescan.org/tx/${transactionHash}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 text-xs bg-green-100 text-green-700 px-2 py-1 rounded hover:bg-green-200 transition-colors font-mono"
+                            >
+                              🔗 View Transaction on BaseScan
+                            </a>
+                          )}
                           <a
                             href={`https://basescan.org/address/${recipient}#tokentxns`}
                             target="_blank"
@@ -164,7 +205,7 @@ export function MainContent() {
                             href={`https://basescan.org/address/${recipient}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-xs bg-green-100 text-green-700 px-2 py-1 rounded hover:bg-green-200 transition-colors"
+                            className="inline-flex items-center gap-1 text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded hover:bg-purple-200 transition-colors"
                           >
                             🔍 View Address Details
                           </a>
@@ -174,7 +215,7 @@ export function MainContent() {
                                 href={`https://basescan.org/address/${accountAddress}#tokentxns`}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1 text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded hover:bg-purple-200 transition-colors"
+                                className="inline-flex items-center gap-1 text-xs bg-slate-100 text-slate-700 px-2 py-1 rounded hover:bg-slate-200 transition-colors"
                               >
                                 🏦 View Your Global Wallet (Base)
                               </a>
@@ -204,11 +245,22 @@ export function MainContent() {
             <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-lg">
               <div className="text-center">
                 <Badge variant="outline">Arbitrum</Badge>
-                <p className="text-sm text-slate-600 mt-1">
-                  {arbitrumBalance
-                    ? `${arbitrumBalance.formattedBalance} USDC`
-                    : "No USDC"}
-                </p>
+                {arbitrumBalance ? (
+                  <div className="mt-1 text-sm">
+                    <p className="text-slate-800 font-medium">
+                      {arbitrumBalance.formattedBalance} USDC
+                    </p>
+                    <p className="text-xs text-green-600">Available</p>
+                    {parseFloat(arbitrumBalance.formattedLockedBalance) !==
+                      0 && (
+                      <p className="text-xs text-orange-600 mt-1">
+                        Locked: {arbitrumBalance.formattedLockedBalance}
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-sm text-slate-600 mt-1">No USDC</p>
+                )}
               </div>
               <ArrowRight className="h-5 w-5 text-slate-400" />
               <div className="text-center">
@@ -217,13 +269,31 @@ export function MainContent() {
               </div>
             </div>
 
-            {!arbitrumBalance ||
-            parseFloat(arbitrumBalance.formattedBalance) === 0 ? (
+            {!hasAvailableUSDC ? (
               <Alert>
                 <AlertDescription>
-                  You need USDC on Arbitrum to test cross-chain transfers. Send
-                  some USDC to your global wallet address:{" "}
-                  {accountAddress.slice(0, 8)}...{accountAddress.slice(-6)}
+                  {arbitrumBalance &&
+                  parseFloat(arbitrumBalance.formattedLockedBalance) > 0 ? (
+                    <>
+                      You have {arbitrumBalance.formattedLockedBalance} USDC
+                      locked on Arbitrum, but need unlocked USDC to make
+                      transfers.
+                      {parseFloat(arbitrumBalance.formattedUnlockedBalance) ===
+                        0 &&
+                        " Send some additional USDC to your global wallet address: "}
+                      {parseFloat(arbitrumBalance.formattedUnlockedBalance) ===
+                        0 &&
+                        `${accountAddress.slice(0, 8)}...${accountAddress.slice(
+                          -6
+                        )}`}
+                    </>
+                  ) : (
+                    <>
+                      You need unlocked USDC on Arbitrum to test cross-chain
+                      transfers. Send some USDC to your global wallet address:{" "}
+                      {accountAddress.slice(0, 8)}...{accountAddress.slice(-6)}
+                    </>
+                  )}
                 </AlertDescription>
               </Alert>
             ) : (

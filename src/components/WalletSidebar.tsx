@@ -107,14 +107,25 @@ export function WalletSidebar() {
               <p className="text-xs text-slate-500 mb-2">Portfolio</p>
               <div className="space-y-2">
                 {portfolio.map((token, index) => (
-                  <div key={index} className="bg-slate-100 p-2 rounded">
-                    <div className="flex justify-between items-center">
+                  <div key={index} className="bg-slate-100 p-3 rounded">
+                    <div className="flex justify-between items-center mb-2">
                       <span className="text-sm font-medium">
                         {token.symbol}
                       </span>
-                      <span className="text-sm">{token.totalBalance}</span>
+                      <div className="text-right">
+                        <span className="text-sm font-mono font-semibold text-green-700">
+                          {token.totalBalance}
+                        </span>
+                        <p className="text-xs text-slate-500">Available</p>
+                      </div>
                     </div>
-                    <p className="text-xs text-slate-500">
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-xs">
+                        <span className="text-orange-600">Locked:</span>
+                        <span className="font-mono">{token.lockedBalance}</span>
+                      </div>
+                    </div>
+                    <p className="text-xs text-slate-500 mt-2">
                       {token.chains.length} chain
                       {token.chains.length !== 1 ? "s" : ""}
                     </p>
