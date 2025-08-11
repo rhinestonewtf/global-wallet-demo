@@ -3,7 +3,7 @@
 import { WalletSidebar } from "@/components/WalletSidebar";
 import { MainContent } from "@/components/MainContent";
 
-export default function Home() {
+export default function App() {
   return (
     <div className="h-screen bg-white flex">
       {/* Left Sidebar - Title */}

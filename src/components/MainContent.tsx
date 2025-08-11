@@ -336,10 +336,22 @@ export function MainContent() {
                     How it works:
                   </h4>
                   <ol className="text-sm text-blue-800 space-y-1">
-                    <li>1. Uses your USDC balance on Arbitrum</li>
-                    <li>2. Rhinestone bridges it to Base automatically</li>
-                    <li>3. Executes the transfer on Base</li>
-                    <li>4. All in one transaction - no manual bridging!</li>
+                    <li>
+                      1. USDC on Arbitrum is used to sponsor an intent on Base
+                    </li>
+                    <li>
+                      2. Rhinestone creates the intent and user signs with
+                      connected EOA
+                    </li>
+                    <li>
+                      3. Rhinestone Relayer Market supplies required USDC on
+                      Base and executes the transaction
+                    </li>
+                    <li>4. Relayer is repaid in USDC on Arbitrum!</li>
+                    <li>
+                      All in one atomic transaction for the user. No bridging
+                      required
+                    </li>
                   </ol>
                 </div>
 
